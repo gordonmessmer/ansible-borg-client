@@ -1,0 +1,7 @@
+[Unit]
+Description=Run borg backup
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemd-inhibit --who=borg-backup '--why=Backup in progress' /root/run-borg

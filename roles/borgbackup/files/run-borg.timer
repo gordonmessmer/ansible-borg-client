@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic borg backup
+
+[Timer]
+OnCalendar=08..20/2:00
+AccuracySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

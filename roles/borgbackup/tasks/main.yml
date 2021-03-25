@@ -1,0 +1,19 @@
+- name: install borgbackup
+  package: name={{ item }} state=present
+  with_items:
+    - borgbackup
+    - fuse-sshfs
+
+- name: install service
+  copy: src=run-borg.service dest=/usr/lib/systemd/system/run-borg.service
+
+- name: install timer
+  copy: src=run-borg.timer dest=/usr/lib/systemd/system/run-borg.timer
+
+- name: install run script
+  template: src=run-borg.j2 dest=/root/run-borg
+            mode=0755 owner=root group=root
+
+- name: set backup server user
+  template: src=sysconfig.j2 dest=/etc/sysconfig/borgbackup
+

@@ -1,0 +1,92 @@
+#!/bin/sh
+
+##
+# borg init --encryption=authenticated ~/backups
+# borg config ~/backups additional_free_space 2G
+##
+
+[ "$USER" = root -o -z "$USER" ] && . /etc/sysconfig/borgbackup
+
+# Setting this, so the repo does not need to be given on the commandline:
+export BORG_REPO=~/backups
+
+# Only run if the server name resolves
+host {{ storage_server }} > /dev/null
+if [ $? != 0 ]
+then
+	exit
+fi
+
+# Make the backup mount point
+test -d ~/backups || mkdir ~/backups || exit 1
+
+# Mount the backup volume via sshfs
+sshfs $USER@{{ storage_server }}:/var/backup/borgbackup/$USER ~/backups || exit 1
+
+# some helpers and error handling:
+info() { printf "\n%s %s\n\n" "$( date )" "$*" >&2; }
+trap 'echo $( date ) Backup interrupted >&2; fusermount -u ~/backups; exit 2' INT TERM
+
+info "Starting backup"
+
+# Backup the most important directories into an archive named after
+# the machine this script is currently running on:
+
+borg create                         \
+    --verbose                       \
+    --filter AME                    \
+    --list                          \
+    --stats                         \
+    --show-rc                       \
+    --one-file-system               \
+    --compression lz4               \
+    --exclude-caches                \
+    --exclude '/home/flatpak'       \
+    --exclude '/home/*/.cache'      \
+    --exclude '/home/*/tmp'         \
+    --exclude '/home/*/Downloads'   \
+    --exclude '/home/*/.local/share/Trash'      \
+    --exclude '/home/*/.thumbnails' \
+    --exclude '/home/*/.thunderbird/*/ImapMail' \
+    --exclude '/home/*/.thunderbird/*/global-messages-db.sqlite' \
+    --exclude '/home/*/.mozilla/firefox/*/Cache' \
+                                    \
+    ::'{hostname}-{now}'            \
+    /etc                            \
+    /home                           \
+
+backup_exit=$?
+
+info "Pruning repository"
+
+# Use the `prune` subcommand to maintain 7 daily, 4 weekly and 6 monthly
+# archives of THIS machine. The '{hostname}-' prefix is very important to
+# limit prune's operation to this machine's archives and not apply to
+# other machines' archives also:
+
+borg prune                          \
+    --list                          \
+    --prefix '{hostname}-'          \
+    --show-rc                       \
+    --keep-last     4               \
+    --keep-within   2d              \
+    --keep-daily    7               \
+    --keep-weekly   4               \
+    --keep-monthly  6               \
+
+prune_exit=$?
+
+# use highest exit code as global exit code
+global_exit=$(( backup_exit > prune_exit ? backup_exit : prune_exit ))
+
+if [ ${global_exit} -eq 0 ]; then
+    info "Backup and Prune finished successfully"
+elif [ ${global_exit} -eq 1 ]; then
+    info "Backup and/or Prune finished with warnings"
+else
+    info "Backup and/or Prune finished with errors"
+fi
+
+fusermount -u ~/backups
+
+exit ${global_exit}
