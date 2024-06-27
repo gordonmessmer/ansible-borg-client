@@ -9,6 +9,8 @@
 
 # Setting this, so the repo does not need to be given on the commandline:
 export BORG_REPO=~/backups
+# Don't fail if the repo was mounted somewhere else interactively.
+export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 
 # Only run if the server name resolves
 host {{ storage_server }} > /dev/null
@@ -66,7 +68,7 @@ info "Pruning repository"
 
 borg prune                          \
     --list                          \
-    --prefix '{hostname}-'          \
+    --glob-archives '{hostname}-*'  \
     --show-rc                       \
     --keep-last     4               \
     --keep-within   2d              \
