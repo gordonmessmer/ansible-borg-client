@@ -1,0 +1,6 @@
+- name: install borgbackup
+  package:
+    name:
+      - borgbackup
+      - fuse-sshfs
+    state: present

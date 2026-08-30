@@ -31,3 +31,30 @@ There are a few steps that the playbook does not perform automatically:
 5. Reserve some space on disk:
    borg config ~/backups additional_free_space 2G
 
+## Atomic / bootc hosts
+
+On an immutable host (Fedora Atomic, bootc) borg can't be layered in with the
+package manager, so instead of installing it on the host we run the same
+run-borg script inside a container on a timer.
+
+Add these hosts to the `[atomic]` group in hosts/hosts.  They use the
+`borgbackup_container` role, which installs a `run-borg.service` that launches
+the image with `podman run`.  The host's /etc and /home are bind-mounted into
+the container read-only as the backup sources, and /root/.ssh is mounted so
+the container can reach the storage server.
+
+The image is built on the control node:
+
+1. Build the container image:
+     podman build -t fedora-python .
+2. Run the playbook:
+     ansible-playbook -i hosts/hosts site.yml
+   For Atomic hosts the role exports the freshly built image from the control
+   node's podman storage, copies the tarball to the host, and loads it into the
+   host's root podman storage.  This only happens when the host's copy is
+   missing or out of date, so re-running the playbook doesn't re-transfer the
+   image unnecessarily.
+
+The manual prerequisites above (ssh key login as root, creating the remote
+directory, `borg init`, reserving space) apply to Atomic hosts too.
+

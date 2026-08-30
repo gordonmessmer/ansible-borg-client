@@ -1,0 +1,3 @@
+- name: install run script
+  copy: src=run-borg dest=/root/run-borg
+        mode=0755 owner=root group=root

@@ -1,2 +1,9 @@
+# Classic hosts get borg + systemd units installed directly (roles/borgbackup).
 [workstation]
 workstation1.local.domain borg_user=gordon
+
+# Atomic / bootc hosts run the run-borg container on a timer
+# (roles/borgbackup_container). The image must be built and made available
+# to the host first; see build-container.yml and the README.
+[atomic]
+atomic1.local.domain borg_user=gordon

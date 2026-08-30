@@ -1,0 +1,8 @@
+# Image reference for the run-borg image built by build-container.yml. It is
+# looked up in the control node's podman storage, shipped to the host, and
+# used in the run-borg.service ExecStart.
+borg_image: localhost/run-borg:latest
+
+# Path on the control node where the image is exported before it is copied to
+# the host.
+borg_image_archive: /tmp/run-borg.tar

@@ -1,0 +1,72 @@
+# Atomic / bootc host: run the pre-built run-borg image on a timer. Ansible
+# runs from a control node (your workstation) and manages the host over SSH;
+# nothing (ansible, ansible-bender) needs to be installed on the host itself.
+#
+# The image is built off-host by build-container.yml, which leaves it in the
+# control node's podman storage. These tasks export it, ship the tarball, and
+# load it into the host's root podman storage -- but only when the host's copy
+# is missing or out of date, so repeated runs don't re-transfer the image.
+
+- name: get image id on the control node
+  command: podman image inspect --format '{% raw %}{{.Id}}{% endraw %}' {{ borg_image }}
+  delegate_to: localhost
+  become: false
+  register: control_image
+  changed_when: false
+
+- name: get image id on the host
+  command: podman image inspect --format '{% raw %}{{.Id}}{% endraw %}' {{ borg_image }}
+  register: host_image
+  failed_when: false
+  changed_when: false
+
+- name: ship and load the image when it is missing or changed
+  when: host_image.rc != 0 or host_image.stdout != control_image.stdout
+  block:
+    - name: export the image on the control node
+      command: podman save {{ borg_image }} -o {{ borg_image_archive }}
+      delegate_to: localhost
+      become: false
+      changed_when: false
+
+    - name: copy the image archive to the host
+      copy:
+        src: "{{ borg_image_archive }}"
+        dest: /var/tmp/run-borg.tar
+
+    - name: load the image
+      command: podman load -i /var/tmp/run-borg.tar
+
+    - name: remove the image archive from the host
+      file:
+        path: /var/tmp/run-borg.tar
+        state: absent
+
+    - name: remove the image archive from the control node
+      file:
+        path: "{{ borg_image_archive }}"
+        state: absent
+      delegate_to: localhost
+      become: false
+
+- name: install service
+  copy:
+    src: run-borg-container.service
+    dest: /etc/systemd/system/run-borg.service
+
+- name: install timer
+  copy:
+    src: "{{ role_path }}/../borgbackup/files/run-borg.timer"
+    dest: /etc/systemd/system/run-borg.timer
+
+- name: set backup server user
+  template:
+    src: "{{ role_path }}/../borgbackup/templates/sysconfig.j2"
+    dest: /etc/sysconfig/borgbackup
+
+- name: enable and start timer
+  systemd:
+    name: run-borg.timer
+    enabled: true
+    state: started
+    daemon_reload: true

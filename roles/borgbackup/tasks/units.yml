@@ -1,0 +1,15 @@
+- name: install service
+  copy: src=run-borg.service dest=/etc/systemd/system/run-borg.service
+
+- name: install timer
+  copy: src=run-borg.timer dest=/etc/systemd/system/run-borg.timer
+
+- name: set backup server user
+  template: src=sysconfig.j2 dest=/etc/sysconfig/borgbackup
+
+- name: enable and start timer
+  systemd:
+    name: run-borg.timer
+    enabled: true
+    state: started
+    daemon_reload: true

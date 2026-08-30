@@ -1,4 +1,11 @@
-- hosts: all
+- hosts: workstation
   roles:
     - borgbackup
 
+# Atomic hosts are managed remotely from a control node, so root on the host
+# is obtained with become (system units + rootful podman). The classic play
+# above needs no become because it is run locally on the host as root.
+- hosts: atomic
+  become: true
+  roles:
+    - borgbackup_container

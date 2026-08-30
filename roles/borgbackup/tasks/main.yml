@@ -1,27 +1,6 @@
-- name: install borgbackup
-  package:
-    name:
-      - borgbackup
-      - fuse-sshfs
-    state: present
-
-- name: install service
-  copy: src=run-borg.service dest=/etc/systemd/system/run-borg.service
-
-- name: install timer
-  copy: src=run-borg.timer dest=/etc/systemd/system/run-borg.timer
-
-- name: install run script
-  template: src=run-borg.j2 dest=/root/run-borg
-            mode=0755 owner=root group=root
-
-- name: set backup server user
-  template: src=sysconfig.j2 dest=/etc/sysconfig/borgbackup
-
-- name: enable and start timer
-  systemd:
-    name: run-borg.timer
-    enabled: true
-    state: started
-    daemon_reload: true
-
+# Classic (package-based) host: install everything directly on the host.
+# The packages and run-borg script are shared with the container build
+# (see build-container.yml); units.yml is classic-only.
+- import_tasks: packages.yml
+- import_tasks: script.yml
+- import_tasks: units.yml

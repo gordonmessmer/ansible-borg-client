@@ -1,0 +1,22 @@
+[Unit]
+Description=Run borg backup (container)
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+# Run the run-borg image (its baked cmd is /root/run-borg). The host's
+# /etc and /home are the backup sources, so they are bind-mounted read-only
+# at the same paths the script expects; /root/.ssh carries the SSH key and
+# known_hosts. --device/--cap-add give sshfs its FUSE access, and
+# label=disable lets the container read the host files under SELinux.
+ExecStart=/usr/bin/podman run --rm \
+    --device /dev/fuse \
+    --cap-add CAP_SYS_ADMIN \
+    --security-opt label=disable \
+    --hostname %H \
+    --volume /etc:/etc:ro \
+    --volume /home:/home:ro \
+    --volume /root/.ssh:/root/.ssh:ro \
+    --volume /root/.config/borg:/root/.config/borg:rw \
+    --volume /root/.cache/borg:/root/.cache/borg:rw \
+    run-borg
