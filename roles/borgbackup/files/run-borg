@@ -51,8 +51,12 @@ borg create                         \
     --exclude '/home/*/.thumbnails' \
     --exclude '/home/*/.thunderbird/*/ImapMail' \
     --exclude '/home/*/.thunderbird/*/global-messages-db.sqlite' \
+    --exclude '/home/*/.var/app/net.thunderbird.Thunderbird/.thunderbird/*/ImapMail' \
+    --exclude '/home/*/.var/app/net.thunderbird.Thunderbird/.thunderbird/*/global-messages-db.sqlite' \
     --exclude '/home/*/.mozilla/firefox/*/Cache' \
     --exclude '/home/*/.mozilla/firefox/*/storage/default/*/cache' \
+    --exclude '/home/*/.var/app/org.mozilla.firefox/.mozilla/firefox/*/Cache' \
+    --exclude '/home/*/.var/app/org.mozilla.firefox/.mozilla/firefox/*/storage/default/*/cache' \
     --exclude '/home/*/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common' \
     --exclude '/home/*/.local/share/gnome-boxes'      \
     --exclude '/home/*/.local/share/containers'      \
