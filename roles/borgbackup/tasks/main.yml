@@ -1,8 +1,9 @@
 - name: install borgbackup
-  package: name={{ item }} state=present
-  with_items:
-    - borgbackup
-    - fuse-sshfs
+  package:
+    name:
+      - borgbackup
+      - fuse-sshfs
+    state: present
 
 - name: install service
   copy: src=run-borg.service dest=/etc/systemd/system/run-borg.service
