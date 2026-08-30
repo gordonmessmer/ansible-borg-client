@@ -1,2 +1,2 @@
 [workstation]
-workstation1.local.domain remote_user=gordon
+workstation1.local.domain borg_user=gordon
