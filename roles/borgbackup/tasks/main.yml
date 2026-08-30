@@ -5,10 +5,10 @@
     - fuse-sshfs
 
 - name: install service
-  copy: src=run-borg.service dest=/usr/lib/systemd/system/run-borg.service
+  copy: src=run-borg.service dest=/etc/systemd/system/run-borg.service
 
 - name: install timer
-  copy: src=run-borg.timer dest=/usr/lib/systemd/system/run-borg.timer
+  copy: src=run-borg.timer dest=/etc/systemd/system/run-borg.timer
 
 - name: install run script
   template: src=run-borg.j2 dest=/root/run-borg
