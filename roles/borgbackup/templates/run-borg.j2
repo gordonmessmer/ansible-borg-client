@@ -5,7 +5,7 @@
 # borg config ~/backups additional_free_space 2G
 ##
 
-[ "$USER" = root -o -z "$USER" ] && . /etc/sysconfig/borgbackup
+{ [ "$USER" = root ] || [ -z "$USER" ]; } && . /etc/sysconfig/borgbackup
 
 # Setting this, so the repo does not need to be given on the commandline:
 export BORG_REPO=~/backups
