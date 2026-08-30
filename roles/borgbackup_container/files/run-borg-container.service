@@ -10,6 +10,7 @@ Type=oneshot
 # known_hosts. --device/--cap-add give sshfs its FUSE access, and
 # label=disable lets the container read the host files under SELinux.
 ExecStart=/usr/bin/podman run --rm \
+    --log-driver passthrough \
     --device /dev/fuse \
     --cap-add CAP_SYS_ADMIN \
     --security-opt label=disable \
