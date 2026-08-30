@@ -13,7 +13,7 @@ export BORG_REPO=~/backups
 export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 
 # Only run if the server name resolves
-host {{ storage_server }} > /dev/null
+getent hosts {{ storage_server }} > /dev/null
 if [ $? != 0 ]
 then
 	exit
