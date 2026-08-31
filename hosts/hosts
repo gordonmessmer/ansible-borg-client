@@ -7,3 +7,4 @@ workstation1.local.domain borg_user=gordon
 # to the host first; see build-container.yml and the README.
 [atomic]
 atomic1.local.domain borg_user=gordon
+host.containers.internal borg_user=gordon
